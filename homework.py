@@ -10,7 +10,7 @@ class Calculator:
         self.records.append(Record)
 
     def get_today_stats(self):
-        today_date = dt.datetime.today().date()
+        today_date = dt.date.today()
         today_stats = 0
         for record in self.records:
             if record.date == today_date:
@@ -18,10 +18,11 @@ class Calculator:
         return today_stats
 
     def get_week_stats(self):
-        today = dt.datetime.today().date()
+        today = dt.date.today()
+        week_ago = today - dt.timedelta(days=7)
         stats = 0
         for record in self.records:
-            if record.date > (today - dt.timedelta(days=7)):
+            if week_ago < record.date <= today:
                 stats += record.amount
         return stats
 
@@ -30,7 +31,7 @@ class Record:
     def __init__(self, amount, comment, date = None):
         self.amount = amount
         if date is None:
-            self.date = dt.datetime.today().date()
+            self.date = dt.date.today()
         else:
             self.date = dt.datetime.strptime(date, "%d.%m.%Y").date()
         self.comment = comment
@@ -40,32 +41,30 @@ class Record:
 
 
 class CashCalculator(Calculator):
-    USD_RATE = 77
-    EURO_RATE = 90
+    USD_RATE = 77.0
+    EURO_RATE = 90.0
 
     def get_today_cash_remained(self, currency):
-        self.currency = currency
-        leftover = self.get_today_stats()
-
+        spent = self.get_today_stats()
+        leftover = self.limit - self.get_today_stats()
         if currency == "rub":
-            self.currency = "руб"
+            currency = "руб"
         elif currency == "usd":
-            leftover /= USD_RATE
-            self.currency = "USD"
-        elif currency == "euro":
-            leftover /= EURO_RATE
-            self.currency = "Euro"
+            currency = "USD"
+            leftover = round(leftover/self.USD_RATE, 2)
+        elif currency == "eur":
+            currency = "Euro"
+            leftover = round(leftover/self.EURO_RATE, 2)
         else:
             raise ValueError
 
-        if leftover < self.limit:
-            leftover = self.limit - leftover
-            balance = f"На сегодня осталось {leftover} {self.currency}"
-        if leftover == self.limit:
+        if spent < self.limit:
+            balance = f"На сегодня осталось {leftover} {currency}"
+        if spent == self.limit:
             balance = "Денег нет, держись"
-        if leftover > self.limit:
-            credit = leftover - self.limit
-            balance = f"Денег нет, держись: твой долг - {credit} {self.currency}"
+        if spent > self.limit:
+            credit = leftover * (-1)
+            balance = f"Денег нет, держись: твой долг - {credit} {currency}"
         
         return balance
 
@@ -78,6 +77,6 @@ class CaloriesCalculator(Calculator):
         if leftover < self.limit:
             leftover = self.limit - leftover
             return ("Сегодня можно съесть что-нибудь ещё, но с общей"
-                    f"калорийностью не более {leftover} кКал")
+                    f" калорийностью не более {leftover} кКал")
         else:
             return "Хватит есть!"
