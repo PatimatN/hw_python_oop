@@ -43,30 +43,29 @@ class Record:
 
 
 class CashCalculator(Calculator):
-    USD_RATE = 77.0
-    EURO_RATE = 90.0
-
-    CURRENCIES = {
-        "rub": (1, "руб"),
-        "usd": (USD_RATE, "USD"),
-        "eur": (EURO_RATE, "Euro")
-    }
+    USD_RATE = 77
+    EURO_RATE = 90
 
     def get_today_cash_remained(self, currency):
+        currencies = {
+            "rub": (1, "руб"),
+            "usd": (self.USD_RATE, "USD"),
+            "eur": (self.EURO_RATE, "Euro")
+        }
         leftover = self.get_leftover()
 
         if leftover == 0:
             return "Денег нет, держись"
-        if currency not in self.CURRENCIES:
+        if currency not in currencies:
             return "Валюта не поддерживается"
-        if currency in self.CURRENCIES:
-            leftover = round(leftover/self.CURRENCIES[currency][0], 2)
+        if currency in currencies:
+            leftover = round(leftover/currencies[currency][0], 2)
 
         if leftover < 0:
             credit = abs(leftover)
             return (f"Денег нет, держись: твой долг - {credit} "
-                    f"{self.CURRENCIES[currency][1]}")
-        return f"На сегодня осталось {leftover} {self.CURRENCIES[currency][1]}"
+                    f"{currencies[currency][1]}")
+        return f"На сегодня осталось {leftover} {currencies[currency][1]}"
 
 
 
@@ -80,3 +79,13 @@ class CaloriesCalculator(Calculator):
                     f" калорийностью не более {leftover} кКал")
         else:
             return "Хватит есть!"
+
+
+cash_calculator = CashCalculator(1000)
+cash_calculator.add_record(Record(amount=145, comment="кофе")) 
+# и к этой записи тоже дата должна добавиться автоматически
+cash_calculator.add_record(Record(amount=300, comment="Серёге за обед"))
+# а тут пользователь указал дату, сохраняем её
+cash_calculator.add_record(Record(amount=3000, comment="бар в Танин др", date="08.11.2019"))
+                
+print(cash_calculator.get_today_cash_remained("rub"))
