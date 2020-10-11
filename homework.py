@@ -43,8 +43,8 @@ class Record:
 
 
 class CashCalculator(Calculator):
-    USD_RATE = 77
-    EURO_RATE = 90
+    USD_RATE = 77.0
+    EURO_RATE = 90.0
 
     def get_today_cash_remained(self, currency):
         currencies = {
