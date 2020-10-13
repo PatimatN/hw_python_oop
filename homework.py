@@ -48,33 +48,32 @@ class CashCalculator(Calculator):
 
     def get_today_cash_remained(self, currency):
         currencies = {
-            "rub": (1, "руб"),
-            "usd": (self.USD_RATE, "USD"),
-            "eur": (self.EURO_RATE, "Euro")
+            "rub": ("руб", 1),
+            "usd": ("USD", self.USD_RATE),
+            "eur": ("Euro", self.EURO_RATE)
         }
+        currency_name, rate = currencies[currency]
         leftover = self.get_leftover()
 
         if leftover == 0:
             return "Денег нет, держись"
         if currency not in currencies:
             return "Валюта не поддерживается"
-        if currency in currencies:
-            leftover = round(leftover/currencies[currency][0], 2)
+        leftover = round(leftover / rate, 2)
 
         if leftover < 0:
             credit = abs(leftover)
             return (f"Денег нет, держись: твой долг - {credit} "
-                    f"{currencies[currency][1]}")
-        return f"На сегодня осталось {leftover} {currencies[currency][1]}"
+                    f"{currency_name}")
+        return f"На сегодня осталось {leftover} {currency_name}"
 
 
 
 class CaloriesCalculator(Calculator):
     def get_calories_remained(self):
-        leftover = self.get_today_stats()
+        leftover = self.get_leftover()
 
-        if leftover < self.limit:
-            leftover = self.get_leftover()
+        if leftover > 0:
             return ("Сегодня можно съесть что-нибудь ещё, но с общей"
                     f" калорийностью не более {leftover} кКал")
         else:
